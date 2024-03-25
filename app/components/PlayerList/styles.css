@@ -1,3 +1,6 @@
+.player {
+    position: relative;
+}
 .player-enter {
     transition: 1s ease all;
 }
