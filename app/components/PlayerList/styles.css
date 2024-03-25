@@ -1,0 +1,12 @@
+.player-enter {
+    transition: 1s ease all;
+}
+.player-enter-active {
+    transition: 1s ease all;
+}
+.player-exit {
+    transition: 1s ease all;
+}
+.player-exit-active {
+    transition: 1s ease all;
+}
