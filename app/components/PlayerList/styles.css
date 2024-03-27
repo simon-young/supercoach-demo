@@ -16,3 +16,7 @@
     opacity: 0;
     transition: 1s ease all;
 }
+/* .flipping li {
+    background-color: yellow !important;
+    transition: 0.5s ease background-color !important;
+} */

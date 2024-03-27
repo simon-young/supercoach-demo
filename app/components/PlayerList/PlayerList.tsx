@@ -1,16 +1,16 @@
 'use client';
-import { ReactHTMLElement, useRef, useState } from "react";
+
+import { useRef, useState } from "react";
 import Player from "../Player/Player";
 import Button from "../Button/Button";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { Flip } from "gsap/Flip";
+import { Flip } from "gsap/dist/Flip";
 import './styles.css';
 import initialData from './mock-data';
 
 // Register GSAP plugins to prevent treeshaking
 gsap.registerPlugin(Flip, useGSAP);
-
 
 // Create a batch for ladder animations
 let batch = Flip.batch("ladder");
@@ -19,14 +19,13 @@ batch.data = [ ...initialData ];
 function PlayerList() {
     // Declare useRefs
     const playerList = useRef<HTMLOListElement>(null);
-    const el = useRef<HTMLOListElement>(null);
-    const q = gsap.utils.selector(el);
+    const playerRow = useRef<HTMLDivElement>(null);
 
     // Set player data array into state
     const [players, setPlayers] = useState(initialData);
     // Capture Flip state into React state
     const [layout, setLayout] = useState(() => ({
-        state: Flip.getState(q('.player-row'))
+        state: Flip.getState(playerRow.current)
     }));
 
     const { contextSafe } = useGSAP({scope: playerList});
@@ -54,7 +53,9 @@ function PlayerList() {
     // Update player score
     const handleScoreUpdate = contextSafe(() => {   
         setLayout({
-            state: Flip.getState(q(".player-row"))
+            state: Flip.getState((".player-row"), {
+                props: "backgroundColor"
+            })
         });
         const updatePlayers = players.map((player) => {
             // Randomly generate number to add to player points
@@ -75,18 +76,19 @@ function PlayerList() {
 
     useGSAP(() => {
         // Animate from the preious state to the current one
-        const timeline = Flip.from(layout.state, {
-            duration: 1,
+        Flip.from(layout.state, {
+            duration: 0.8,
             ease: 'power1.inOut',
             stagger: 0.2,
             // nested: true,
             absolute: true,
             simple: true,
+            // toggleClass: 'flipping',
             // onComplete: () => console.log('onComplete: fired'),
 
         });
         
-    }, [players]);
+    }, { dependencies: [players], scope: playerList, revertOnUpdate: true});
 
     return (
         <div className="min-w-[580px]">
@@ -94,7 +96,7 @@ function PlayerList() {
             <Button className="mx-2" onClick={handleScoreUpdate}>Test score update</Button>
             <Button className="mx-2 border-slate-800 bg-transparent !text-slate-800 hover:!bg-slate-300 hover:border-slate-300" onClick={handleReset}>Reset</Button>
 
-            <ol className="my-4 player-list" ref={el}>
+            <ol className="my-4 player-list" ref={playerList}>
                 { players.map((player) => {
                         i++; // Create a count for position order
 
