@@ -1,147 +1,43 @@
 'use client';
-import { useEffect, useRef, useState } from "react";
+import { ReactHTMLElement, useRef, useState } from "react";
 import Player from "../Player/Player";
 import Button from "../Button/Button";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Flip } from "gsap/Flip";
-import {
-    CSSTransition,
-    TransitionGroup,
-  } from 'react-transition-group';
 import './styles.css';
+import initialData from './mock-data';
 
-gsap.registerPlugin(useGSAP);
-gsap.registerPlugin(Flip);
+// Register GSAP plugins to prevent treeshaking
+gsap.registerPlugin(Flip, useGSAP);
 
-// Mock Player Data
-const initialData = [
-    {
-        name: 'Max Gawn',
-        player_value: 432000,
-        player_pos: 'RUC',
-        team: 'Melbourne Demons',
-        team_logo: '/images/team-logos/melb.svg',
-        ownership: 24,
-        break_even: 103,
-        points: 197,
-        id: 'mg-melb',
-    },
-    {
-        name: 'Christian Petracca',
-        player_value: 641900,
-        player_pos: 'MID',
-        team: 'Melbourne Demons',
-        team_logo: '/images/team-logos/melb.svg',
-        ownership: 43,
-        break_even: 124,
-        points: 113,
-        id: 'cp-melb',
-    },
-    {
-        name: 'Oscar McInerney',
-        player_value: 522700,
-        player_pos: 'RUC',
-        team: 'Brisbane Lions',
-        team_logo: '/images/team-logos/bl.svg',
-        ownership: 0.68,
-        break_even: 87,
-        points: 108,
-        id: 'om-bl',
-    },
-    {
-        name: 'Jack Viney',
-        player_value: 5225300,
-        player_pos: 'MID',
-        team: 'Melbourne Demons',
-        team_logo: '/images/team-logos/melb.svg',
-        ownership: 2,
-        break_even: 137,
-        points: 104,
-        id: 'jv-melb',
-    },
-    {
-        name: 'Will Ashcroft',
-        player_value: 457500,
-        player_pos: 'MID',
-        team: 'Brisbane Lions',
-        team_logo: '/images/team-logos/bl.svg',
-        ownership: 19,
-        break_even: 65,
-        points: 102,
-        id: 'wa-bl',
-    },
-    {
-        name: 'Jake Bowey',
-        player_value: 353700,
-        player_pos: 'DEF',
-        team: 'Melbourne Demons',
-        team_logo: '/images/team-logos/melb.svg',
-        ownership: 0.2,
-        break_even: 72,
-        points: 96,
-        id: 'jb-melb',
-    },
-    {
-        name: 'Hugh McCluggage',
-        player_value: 547900,
-        player_pos: 'MID',
-        team: 'Brisbane Lions',
-        team_logo: '/images/team-logos/bl.svg',
-        ownership: 0.4,
-        break_even: 19,
-        points: 92,
-        id: 'hmcm-bl',
-    },
-    {
-        name: 'Jarryd Lyons',
-        player_value: 365800,
-        player_pos: 'MID',
-        team: 'Brisbane Lions',
-        team_logo: '/images/team-logos/bl.svg',
-        ownership: 0.4,
-        break_even: 55,
-        points: 89,
-        id: 'jl-bl',
-    },
-    {
-        name: 'Harris Andrews',
-        player_value: 495800,
-        player_pos: 'DEF',
-        team: 'Brisbane Lions',
-        team_logo: '/images/team-logos/bl.svg',
-        ownership: 3,
-        break_even: 24,
-        points: 87,
-        id: 'ha-bl',
-    },
-    {
-        name: 'Angus Brayshaw',
-        player_value: 484300,
-        player_pos: 'DEF/MID',
-        team: 'Melbourne Demons',
-        team_logo: '/images/team-logos/melb.svg',
-        ownership: 6,
-        break_even: 84,
-        points: 83,
-        id: 'ab-melb',
-    },
-];
+
+// Create a batch for ladder animations
+let batch = Flip.batch("ladder");
+batch.data = [ ...initialData ];
 
 function PlayerList() {
+    // Declare useRefs
+    const playerList = useRef<HTMLOListElement>(null);
+    const el = useRef<HTMLOListElement>(null);
+    const q = gsap.utils.selector(el);
+
+
     // Set player data array into state
     const [players, setPlayers] = useState(initialData);
+    const [layout, setLayout] = useState(() => ({
+        state: Flip.getState(q(".player-row"))
+    }));
 
-    const playerRow = useRef<HTMLDivElement>(null);
-    const playerList = useRef<HTMLElement>(null);
+    
+    
 
     const { contextSafe } = useGSAP({scope: playerList});
 
     // Integer for incrementing player order
     let i = 0;
 
-
-    function handleDelete(event: React.MouseEvent<HTMLButtonElement>) {
+    const handleDelete = contextSafe((event: React.MouseEvent<HTMLButtonElement>) => {   
         // Check player name and team to be deleted
         const playerName = event.currentTarget.parentElement?.parentElement?.querySelector('.player-name')?.innerHTML;
         const playerTeam = event.currentTarget.parentElement?.parentElement?.querySelector('.team-name')?.innerHTML;
@@ -151,7 +47,7 @@ function PlayerList() {
 
         // Add new array to players variable
         setPlayers(result);
-    }
+    })
 
     // Reset players array
     function handleReset() {
@@ -159,10 +55,10 @@ function PlayerList() {
     }
 
     // Update player score
-    const handleScoreUpdate = contextSafe(() => {
-        // Get current state for FLIP - https://gsap.com/docs/v3/Plugins/Flip/
-        // const state = Flip.getState('.player-row');
-
+    const handleScoreUpdate = contextSafe(() => {   
+        setLayout({
+            state: Flip.getState(q(".player-row"))
+        });
         const updatePlayers = players.map((player) => {
             // Randomly generate number to add to player points
             const num = Math.floor(Math.random() * 20);
@@ -177,24 +73,64 @@ function PlayerList() {
         const sortedPlayers = updatePlayers.toSorted((a, b) => b.points - a.points);
         
         // Update player array
-        setPlayers(sortedPlayers);
+        setPlayers(sortedPlayers);  
+    });
 
-        // todo - all Flip.from(state, options)
-        // Flip.from(state, {
-        //     duration: 1,
-        //     ease: 'power1',
-        //     absolute: true,
-        //     nested: true,
-        //     zIndex: 999,
+    useGSAP(() => {
+        // const state = Flip.getState(".player-row", {
         //     simple: true
         // });
 
-    });
-    const[ bounds, setBounds] = useState();
-    useGSAP(() => {
-        console.log('useGSAP has fired');
+        // gsap.to(q(".player-row"), { x: 100 });
+
+        // Animate from the preious state to the current one
+        const timeline = Flip.from(layout.state, {
+            duration: 2,
+            ease: 'power1.inOut',
+            stagger: 0.2,
+            // nested: true,
+            absolute: true,
+            simple: true,
+            onComplete: () => console.log('onComplete: fired'),
+
+        });
+
+        // let action = batch.add({
+        //     getState(self) {
+        //       return Flip.getState(".player-row");
+        //     },
+        //     // setState({ state }) {
+        //     //     console.log('setState:', state);
+        //     // },
+        //     animate({ state }) {
+        //       if (!state) return;
+
+        //       console.log('state:', state);
+      
+        //       Flip.from(state, {
+        //         ease: "power1",
+        //         duration: 2,
+        //         opacity: 0.1,
+        //         simple: true,
+        //         nested: true,
+        //         stagger: 0.2,
+        //         fade: true,
+        //         scale: true,
+        //         targets: ".player-row",
+        //         onEnter: elements => console.log('elements:', elements),
+        //         onComplete: () => console.log('onComplete: fired'),
+        //         onLeave: () => console.log('onLeave: fired'),
+        //       });
+        //     }
+        // });
+
+        // console.log('batch:', batch);
+
+        // batch.run();
+
+        // return () => action.kill();
         
-    }, {dependencies: [players], scope: playerList});
+    }, [players]);
 
     return (
         <div className="min-w-[580px]">
@@ -202,14 +138,12 @@ function PlayerList() {
             <Button className="mx-2" onClick={handleScoreUpdate}>Test score update</Button>
             <Button className="mx-2 border-slate-800 bg-transparent !text-slate-800 hover:!bg-slate-300 hover:border-slate-300" onClick={handleReset}>Reset</Button>
 
-            <TransitionGroup className="my-4 player-list" component="ol">
+            <ol className="my-4 player-list" ref={el}>
                 { players.map((player) => {
                         i++; // Create a count for position order
-                        console.log(player);
 
                         return (
-                        <CSSTransition key={i} timeout={500} className="player">
-                            <div className="relative player-row transition-all">
+                            <div key={i} className="relative player-row" data-flip-id={player.id}>
                                 <Player 
                                     pos={i} 
                                     count={String(i)} 
@@ -233,10 +167,9 @@ function PlayerList() {
                                     </button>
                                 </div>
                             </div>
-                        </CSSTransition>
-                    );                      
+                        );                      
                 })}
-            </TransitionGroup>
+            </ol>
         </div>
     );
 }

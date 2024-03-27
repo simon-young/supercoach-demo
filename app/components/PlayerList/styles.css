@@ -2,14 +2,17 @@
     position: relative;
 }
 .player-enter {
+    opacity: 1;
     transition: 1s ease all;
 }
 .player-enter-active {
     transition: 1s ease all;
 }
 .player-exit {
+    opacity: 0;
     transition: 1s ease all;
 }
 .player-exit-active {
+    opacity: 0;
     transition: 1s ease all;
 }
