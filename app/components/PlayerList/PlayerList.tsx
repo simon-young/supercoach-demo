@@ -22,15 +22,12 @@ function PlayerList() {
     const el = useRef<HTMLOListElement>(null);
     const q = gsap.utils.selector(el);
 
-
     // Set player data array into state
     const [players, setPlayers] = useState(initialData);
+    // Capture Flip state into React state
     const [layout, setLayout] = useState(() => ({
-        state: Flip.getState(q(".player-row"))
+        state: Flip.getState(q('.player-row'))
     }));
-
-    
-    
 
     const { contextSafe } = useGSAP({scope: playerList});
 
@@ -77,58 +74,17 @@ function PlayerList() {
     });
 
     useGSAP(() => {
-        // const state = Flip.getState(".player-row", {
-        //     simple: true
-        // });
-
-        // gsap.to(q(".player-row"), { x: 100 });
-
         // Animate from the preious state to the current one
         const timeline = Flip.from(layout.state, {
-            duration: 2,
+            duration: 1,
             ease: 'power1.inOut',
             stagger: 0.2,
             // nested: true,
             absolute: true,
             simple: true,
-            onComplete: () => console.log('onComplete: fired'),
+            // onComplete: () => console.log('onComplete: fired'),
 
         });
-
-        // let action = batch.add({
-        //     getState(self) {
-        //       return Flip.getState(".player-row");
-        //     },
-        //     // setState({ state }) {
-        //     //     console.log('setState:', state);
-        //     // },
-        //     animate({ state }) {
-        //       if (!state) return;
-
-        //       console.log('state:', state);
-      
-        //       Flip.from(state, {
-        //         ease: "power1",
-        //         duration: 2,
-        //         opacity: 0.1,
-        //         simple: true,
-        //         nested: true,
-        //         stagger: 0.2,
-        //         fade: true,
-        //         scale: true,
-        //         targets: ".player-row",
-        //         onEnter: elements => console.log('elements:', elements),
-        //         onComplete: () => console.log('onComplete: fired'),
-        //         onLeave: () => console.log('onLeave: fired'),
-        //       });
-        //     }
-        // });
-
-        // console.log('batch:', batch);
-
-        // batch.run();
-
-        // return () => action.kill();
         
     }, [players]);
 
