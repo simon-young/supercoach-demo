@@ -3,30 +3,25 @@
 import { useRef, useState } from "react";
 import Player from "../Player/Player";
 import Button from "../Button/Button";
-import gsap from "gsap";
+import { gsap } from "gsap"
 import { useGSAP } from "@gsap/react";
-import { Flip } from "gsap/dist/Flip";
+import { Flip } from "gsap/Flip";
 import './styles.css';
 import initialData from './mock-data';
 
 // Register GSAP plugins to prevent treeshaking
-gsap.registerPlugin(Flip, useGSAP);
-
-// Create a batch for ladder animations
-let batch = Flip.batch("ladder");
-batch.data = [ ...initialData ];
+gsap.registerPlugin(useGSAP,Flip);
 
 function PlayerList() {
-    // Declare useRefs
+    // // Declare useRefs
     const playerList = useRef<HTMLOListElement>(null);
     const playerRow = useRef<HTMLDivElement>(null);
 
     // Set player data array into state
     const [players, setPlayers] = useState(initialData);
     // Capture Flip state into React state
-    const [layout, setLayout] = useState(() => ({
-        state: Flip.getState(playerRow.current)
-    }));
+    // const [layout, setLayout] = useState(() => Flip.getState(playerRow.current));
+    const [layout, setLayout] = useState<any>();
 
     const { contextSafe } = useGSAP({scope: playerList});
 
@@ -52,11 +47,8 @@ function PlayerList() {
 
     // Update player score
     const handleScoreUpdate = contextSafe(() => {   
-        setLayout({
-            state: Flip.getState((".player-row"), {
-                props: "backgroundColor"
-            })
-        });
+        setLayout( Flip.getState((".player-row"), { props: "backgroundColor"}) );
+
         const updatePlayers = players.map((player) => {
             // Randomly generate number to add to player points
             const num = Math.floor(Math.random() * 20);
@@ -75,8 +67,10 @@ function PlayerList() {
     });
 
     useGSAP(() => {
+        if (!layout) return;
+
         // Animate from the preious state to the current one
-        Flip.from(layout.state, {
+        Flip.from(layout, {
             duration: 0.8,
             ease: 'power1.inOut',
             stagger: 0.2,
@@ -87,6 +81,8 @@ function PlayerList() {
             // onComplete: () => console.log('onComplete: fired'),
 
         });
+        
+        
         
     }, { dependencies: [players], scope: playerList, revertOnUpdate: true});
 
